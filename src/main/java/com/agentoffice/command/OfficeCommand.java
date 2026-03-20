@@ -139,7 +139,7 @@ public class OfficeCommand implements CommandExecutor, TabCompleter {
                 for (var slot : allSlots) {
                     var desks = slot.computeDesks(buildingX, buildingZ, cfg.getDesksPerFloor());
                     var particle = slot.state() == FloorSlot.FloorState.OCCUPIED
-                            ? Particle.VILLAGER_HAPPY : Particle.SMOKE_NORMAL;
+                            ? Particle.HAPPY_VILLAGER : Particle.SMOKE;
                     for (DeskConfig desk : desks) {
                         Location loc = new Location(world, desk.x() + 0.5, desk.y() + 1, desk.z() + 0.5);
                         world.spawnParticle(particle, loc, 3, 0.2, 0.2, 0.2, 0);

@@ -1,7 +1,7 @@
 name: AgentOffice
 version: '1.0.0-SNAPSHOT'
 main: com.agentoffice.AgentOfficePlugin
-api-version: '1.20'
+api-version: '1.21'
 description: Claude agents work in a virtual office driven by beads tasks
 authors:
   - washcycle
