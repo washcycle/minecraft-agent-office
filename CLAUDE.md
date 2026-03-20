@@ -25,6 +25,7 @@ Allowed types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `perf`, `buil
 ## Session End
 
 Before finishing any session:
+
 1. `git add <files>` — stage changes
 2. `git commit -m "type: description"` — conventional commit
 3. `git push` — push to remote
