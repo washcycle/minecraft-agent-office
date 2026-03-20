@@ -1,0 +1,19 @@
+name: AgentOffice
+version: '1.0.0-SNAPSHOT'
+main: com.agentoffice.AgentOfficePlugin
+api-version: '1.20'
+description: Claude agents work in a virtual office driven by beads tasks
+authors:
+  - washcycle
+website: https://github.com/washcycle/minecraft-agent-office
+
+permissions:
+  agentoffice.admin:
+    description: Access to admin office commands (setup, reload, visualise)
+    default: op
+
+commands:
+  office:
+    description: Manage the agent office
+    usage: /office <reload|setup|visualise|status>
+    permission: agentoffice.admin

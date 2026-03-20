@@ -1,0 +1,45 @@
+# AgentOffice Configuration
+# ─────────────────────────────────────────────────────────────────
+
+# Name of the Minecraft world that serves as the virtual office
+office-world: world
+
+# Anthropic API key — REQUIRED
+# Get yours at https://console.anthropic.com/
+claude-api-key: ""
+
+# Path or name of the beads CLI binary
+# If bd is on your PATH you can leave this as "bd"
+beads-binary: bd
+
+# How often (in seconds) to poll beads for task state changes
+poll-interval-seconds: 10
+
+# ─── Team Leader NPC ──────────────────────────────────────────────
+team-leader:
+  # Block position where the team leader NPC stands (REQUIRED)
+  position:
+    x: 0
+    y: 64
+    z: 0
+  # How often (seconds) the team leader broadcasts a status summary
+  broadcast-interval-seconds: 30
+
+# ─── Elevator ─────────────────────────────────────────────────────
+elevator:
+  # Block position of the elevator base (ground floor) — REQUIRED
+  position:
+    x: 10
+    y: 60
+    z: 10
+  # Height of the elevator shaft in blocks
+  height: 4
+
+# ─── Desks ────────────────────────────────────────────────────────
+# Each entry is a desk position. Run `/office setup auto <rows> <cols>`
+# to auto-generate these from your in-game position.
+desks:
+  - { x: 5, y: 64, z: 5, facing: NORTH }
+  - { x: 5, y: 64, z: 8, facing: NORTH }
+  - { x: 8, y: 64, z: 5, facing: NORTH }
+  - { x: 8, y: 64, z: 8, facing: NORTH }

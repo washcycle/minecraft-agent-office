@@ -148,3 +148,35 @@ For more details, see README.md and docs/QUICKSTART.md.
 - If push fails, resolve and retry until it succeeds
 
 <!-- END BEADS INTEGRATION -->
+
+## Build
+
+```bash
+./gradlew build           # compile + shadow jar → build/libs/minecraft-agent-office-*.jar
+./gradlew test            # run unit tests
+./gradlew shadowJar       # build deployable fat jar
+```
+
+Java 17+ required. Gradle wrapper included — no global Gradle installation needed.
+
+## Project Structure
+
+```
+src/main/java/com/agentoffice/
+  AgentOfficePlugin.java          # main plugin entry point
+  config/PluginConfig.java        # config.yml loader + validator
+  beads/BeadsClient.java          # interface
+  beads/BeadsCliClient.java       # ProcessBuilder shell-out to `bd`
+  beads/BeadsPoller.java          # BukkitRunnable poll loop
+  beads/BeadsTask.java            # POJO for a beads task
+  claude/ClaudeParaphraser.java   # async Claude API → ≤10-word paraphrase
+  layout/OfficeLayout.java        # desk grid + elevator positions
+  layout/DeskRegistry.java        # desk assignment + queue
+  npc/AgentNpc.java               # ArmorStand NPC for one task
+  npc/AgentRegistry.java          # task-ID → AgentNpc map
+  npc/TeamLeaderNpc.java          # permanent team lead NPC
+  elevator/ElevatorController.java
+  command/OfficeCommand.java
+  event/AgentSpawnEvent.java
+  event/AgentDespawnEvent.java
+```
