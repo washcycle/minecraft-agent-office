@@ -62,7 +62,7 @@ public class AgentOfficePlugin extends JavaPlugin {
         beadsPoller.runTaskTimerAsynchronously(this, pollTicks, pollTicks);
 
         // 6. Register commands
-        var officeCmd = new OfficeCommand(this);
+        var officeCmd = new OfficeCommand(this, agentRegistry, deskRegistry);
         var cmd = getCommand("office");
         if (cmd != null) {
             cmd.setExecutor(officeCmd);

@@ -2,7 +2,10 @@ package com.agentoffice.command;
 
 import com.agentoffice.AgentOfficePlugin;
 import com.agentoffice.config.DeskConfig;
+import com.agentoffice.layout.DeskRegistry;
 import com.agentoffice.layout.OfficeLayout;
+import com.agentoffice.npc.AgentNpc;
+import com.agentoffice.npc.AgentRegistry;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
@@ -24,14 +27,18 @@ import java.util.Map;
  *   reload    — re-read config.yml
  *   setup     — auto-generate desk layout
  *   visualise — show particle markers
- *   status    — show active agents
+ *   status    — show active agents and desk occupancy
  */
 public class OfficeCommand implements CommandExecutor, TabCompleter {
 
     private final AgentOfficePlugin plugin;
+    private final AgentRegistry agentRegistry;
+    private final DeskRegistry deskRegistry;
 
-    public OfficeCommand(AgentOfficePlugin plugin) {
+    public OfficeCommand(AgentOfficePlugin plugin, AgentRegistry agentRegistry, DeskRegistry deskRegistry) {
         this.plugin = plugin;
+        this.agentRegistry = agentRegistry;
+        this.deskRegistry = deskRegistry;
     }
 
     @Override
@@ -142,8 +149,25 @@ public class OfficeCommand implements CommandExecutor, TabCompleter {
     }
 
     private boolean handleStatus(CommandSender sender) {
-        // Full implementation in commands task (9.3)
-        sender.sendMessage("§7[status] Not yet implemented — coming in commands task.");
+        Map<String, AgentNpc> agents = agentRegistry.getAgents();
+        int totalDesks = deskRegistry.freeCount() + agents.size();
+        int occupied = agents.size();
+        int free = deskRegistry.freeCount();
+
+        sender.sendMessage("§6=== AgentOffice Status ===");
+        sender.sendMessage("§7Desks: §a" + free + " free §7/ §c" + occupied + " occupied §7/ §f" + totalDesks + " total");
+
+        if (agents.isEmpty()) {
+            sender.sendMessage("§7No active agents.");
+        } else {
+            sender.sendMessage("§7Active agents (" + agents.size() + "):");
+            for (AgentNpc npc : agents.values()) {
+                String label = npc.getEntity() != null && npc.getEntity().getCustomName() != null
+                        ? npc.getEntity().getCustomName()
+                        : npc.getTaskId();
+                sender.sendMessage("§7  • §f" + label + " §8[" + npc.getTaskId() + "]");
+            }
+        }
         return true;
     }
 

@@ -69,12 +69,12 @@
 
 - [x] 9.1 Register `/office` command with subcommands: `reload`, `setup`, `visualise`, `status`
 - [x] 9.2 Add `agentoffice.admin` permission required for setup and reload
-- [ ] 9.3 Add `/office status` command showing current desk occupancy and active agent list in chat
+- [x] 9.3 Add `/office status` command showing current desk occupancy and active agent list in chat
 
 ## 10. Testing & Polish
 
 - [x] 10.1 Unit tests for `BeadsCliClient` JSON parsing with fixture data
-- [ ] 10.2 Unit tests for `ClaudeParaphraser` cache logic
+- [x] 10.2 Unit tests for `ClaudeParaphraser` cache logic
 - [x] 10.3 Unit tests for `DeskRegistry` assignment and queue logic
-- [ ] 10.4 Manual integration test checklist in `TESTING.md`
+- [x] 10.4 Manual integration test checklist in `TESTING.md`
 - [x] 10.5 Add `README.md` with installation, config reference, and screenshot placeholder
