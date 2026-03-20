@@ -1,13 +1,23 @@
 package com.agentoffice.command;
 
 import com.agentoffice.AgentOfficePlugin;
+import com.agentoffice.config.DeskConfig;
+import com.agentoffice.layout.OfficeLayout;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Handles the /office command and its subcommands:
@@ -57,14 +67,77 @@ public class OfficeCommand implements CommandExecutor, TabCompleter {
     }
 
     private boolean handleSetup(CommandSender sender, String[] args) {
-        // Full implementation in layout tasks (5.5)
-        sender.sendMessage("§7[setup] Not yet implemented — coming in layout task.");
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cYou must be in-game to use /office setup auto.");
+            return true;
+        }
+        if (args.length < 4 || !args[1].equalsIgnoreCase("auto")) {
+            sender.sendMessage("§cUsage: /office setup auto <rows> <cols>");
+            return true;
+        }
+        int rows, cols;
+        try {
+            rows = Integer.parseInt(args[2]);
+            cols = Integer.parseInt(args[3]);
+        } catch (NumberFormatException e) {
+            sender.sendMessage("§cRows and cols must be integers.");
+            return true;
+        }
+
+        Location origin = player.getLocation();
+        int ox = origin.getBlockX(), oy = origin.getBlockY(), oz = origin.getBlockZ();
+
+        List<Map<String, Object>> deskList = new ArrayList<>();
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                deskList.add(Map.of(
+                        "x", ox + c * 2,
+                        "y", oy,
+                        "z", oz + r * 2,
+                        "facing", "NORTH"
+                ));
+            }
+        }
+
+        FileConfiguration cfg = plugin.getConfig();
+        cfg.set("desks", deskList);
+        plugin.saveConfig();
+        plugin.getPluginConfig2().load();
+
+        sender.sendMessage("§a" + (rows * cols) + " desks written to config.yml starting at "
+                + ox + "," + oy + "," + oz);
         return true;
     }
 
     private boolean handleVisualise(CommandSender sender) {
-        // Full implementation in layout tasks (5.6)
-        sender.sendMessage("§7[visualise] Not yet implemented — coming in layout task.");
+        OfficeLayout layout = new OfficeLayout(plugin.getPluginConfig2());
+        World world = plugin.getServer().getWorld(plugin.getPluginConfig2().getOfficeWorld());
+        if (world == null) {
+            sender.sendMessage("§cOffice world '" + plugin.getPluginConfig2().getOfficeWorld() + "' not found.");
+            return true;
+        }
+
+        new BukkitRunnable() {
+            int elapsed = 0;
+
+            @Override
+            public void run() {
+                elapsed++;
+                // Desk markers (green)
+                for (DeskConfig desk : layout.getDesks()) {
+                    Location loc = new Location(world, desk.x() + 0.5, desk.y() + 1, desk.z() + 0.5);
+                    world.spawnParticle(Particle.VILLAGER_HAPPY, loc, 5, 0.3, 0.3, 0.3, 0);
+                }
+                // Elevator marker (yellow)
+                var elev = layout.getElevatorTop();
+                Location elevLoc = new Location(world, elev.x() + 0.5, elev.y() + 1, elev.z() + 0.5);
+                world.spawnParticle(Particle.NOTE, elevLoc, 3, 0.3, 0.3, 0.3, 0);
+
+                if (elapsed >= 10) cancel(); // 10 seconds at 1/s
+            }
+        }.runTaskTimer(plugin, 0L, 20L);
+
+        sender.sendMessage("§aShowing office layout for 10 seconds...");
         return true;
     }
 
