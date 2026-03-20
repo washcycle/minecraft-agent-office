@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_database": "minecraft_agent_office",
+  "project_id": "1d1f9d32-5abd-4fd7-b3b9-a41487142fd2"
+}
