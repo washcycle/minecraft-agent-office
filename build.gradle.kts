@@ -14,6 +14,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    testImplementation("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
 
     // HTTP client for Claude API
     implementation("com.squareup.okhttp3:okhttp:4.12.0")

@@ -25,11 +25,11 @@ public class ElevatorController {
     }
 
     /**
-     * Teleports the ArmorStand from elevator base to top, 1 block/tick.
+     * Teleports the ArmorStand from elevator base to the given targetY, 1 block/tick.
      * Opens the door on arrival, then calls onComplete on the main thread.
      */
-    public void ascend(ArmorStand entity, Runnable onComplete) {
-        int height = layout.getElevatorTop().y() - layout.getElevatorBase().y();
+    public void ascend(ArmorStand entity, int targetY, Runnable onComplete) {
+        int height = targetY - layout.getElevatorBase().y();
         World world = entity.getWorld();
         double startX = layout.getElevatorBase().x() + 0.5;
         double startY = layout.getElevatorBase().y();
@@ -40,6 +40,7 @@ public class ElevatorController {
                 layout.getElevatorBase().x(),
                 layout.getElevatorBase().y(),
                 layout.getElevatorBase().z()).getLocation().add(0.5, 0, 0.5));
+        // height computed above using targetY
 
         new BukkitRunnable() {
             int tick = 0;

@@ -5,6 +5,8 @@ import com.agentoffice.beads.BeadsException;
 import com.agentoffice.beads.BeadsTask;
 import com.agentoffice.config.BlockPos;
 import com.agentoffice.config.PluginConfig;
+import com.agentoffice.session.FloorRegistry;
+import com.agentoffice.session.FloorSlot;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -32,17 +34,19 @@ public class TeamLeaderNpc implements Listener {
     private final PluginConfig config;
     private final BeadsClient beadsClient;
     private final AgentRegistry agentRegistry;
+    private final FloorRegistry floorRegistry;
     private final Logger logger;
 
     private ArmorStand entity;
     private BukkitRunnable broadcastTask;
 
     public TeamLeaderNpc(Plugin plugin, PluginConfig config, BeadsClient beadsClient,
-                          AgentRegistry agentRegistry, Logger logger) {
+                          AgentRegistry agentRegistry, FloorRegistry floorRegistry, Logger logger) {
         this.plugin = plugin;
         this.config = config;
         this.beadsClient = beadsClient;
         this.agentRegistry = agentRegistry;
+        this.floorRegistry = floorRegistry;
         this.logger = logger;
     }
 
@@ -90,27 +94,28 @@ public class TeamLeaderNpc implements Listener {
     private void broadcastStatus() {
         if (entity == null || !entity.isValid()) return;
 
+        List<FloorSlot> occupied = floorRegistry.getOccupiedSlots();
         Map<String, AgentNpc> activeAgents = agentRegistry.getAgents();
-        String message;
 
-        if (activeAgents.isEmpty()) {
-            message = "§6[Team Lead] §e🟡 Office is quiet — no active tasks";
+        StringBuilder sb = new StringBuilder("§6[Team Lead] ");
+        if (occupied.isEmpty()) {
+            sb.append("§e Office is quiet — no active sessions");
         } else {
-            StringBuilder sb = new StringBuilder("§6[Team Lead] §a🟢 ")
-                    .append(activeAgents.size())
-                    .append(" agent").append(activeAgents.size() == 1 ? "" : "s")
-                    .append(" working");
-
-            for (AgentNpc npc : activeAgents.values()) {
-                String label = npc.getEntity() != null
-                        ? npc.getEntity().getCustomName()
-                        : npc.getTaskId();
-                sb.append(" §7|§f ").append(label);
+            sb.append("§a").append(occupied.size()).append(" session")
+              .append(occupied.size() == 1 ? "" : "s").append(", ")
+              .append("§f").append(activeAgents.size()).append(" agent")
+              .append(activeAgents.size() == 1 ? "" : "s").append(" working");
+            for (FloorSlot slot : occupied) {
+                long floorAgents = activeAgents.keySet().stream()
+                        .filter(id -> slot.projectName() != null && id.startsWith(slot.projectName() + ":"))
+                        .count();
+                sb.append(" §7| §6Fl.").append(slot.floorNumber())
+                  .append(" §f[").append(slot.projectName()).append("] ")
+                  .append("§a").append(floorAgents).append(" agent").append(floorAgents == 1 ? "" : "s");
             }
-            message = sb.toString();
         }
 
-        // Broadcast to players within 32 blocks
+        String message = sb.toString();
         Location leaderLoc = entity.getLocation();
         for (Player player : entity.getWorld().getPlayers()) {
             if (player.getLocation().distance(leaderLoc) <= 32) {

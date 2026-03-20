@@ -15,15 +15,37 @@ public class PluginConfig {
 
     private final AgentOfficePlugin plugin;
 
-    // Loaded values
+    // Core
     private String officeWorld;
     private String claudeApiKey;
     private String beadsBinary;
     private int pollIntervalSeconds;
+
+    // Session detection
+    private String sessionsFile;
+    private int sessionExpiryMinutes;
+
+    // Team leader
     private BlockPos teamLeaderPos;
     private int teamLeaderBroadcastIntervalSeconds;
+
+    // Elevator
     private BlockPos elevatorPos;
     private int elevatorHeight;
+
+    // Building
+    private int buildingX;
+    private int buildingZ;
+    private int lobbyY;
+
+    // Floor geometry
+    private int floorHeight;
+    private int floorWidth;
+    private int floorDepth;
+    private int desksPerFloor;
+    private int maxFloors;
+
+    // Legacy — kept for backward compat warning only
     private List<DeskConfig> desks;
 
     public PluginConfig(AgentOfficePlugin plugin) {
@@ -42,7 +64,7 @@ public class PluginConfig {
 
         claudeApiKey = cfg.getString("claude-api-key", "");
         if (claudeApiKey.isBlank()) {
-            errors.add("claude-api-key is required");
+            plugin.getLogger().warning("[AgentOffice] claude-api-key not set — NPCs will show raw task titles.");
         }
 
         beadsBinary = cfg.getString("beads-binary", "bd");
@@ -51,6 +73,11 @@ public class PluginConfig {
         }
 
         pollIntervalSeconds = cfg.getInt("poll-interval-seconds", 10);
+
+        // Session detection
+        String rawSessionsFile = cfg.getString("sessions-file", "~/.claude/office-sessions.json");
+        sessionsFile = rawSessionsFile.replace("~", System.getProperty("user.home"));
+        sessionExpiryMinutes = cfg.getInt("session-expiry-minutes", 480);
 
         // Team leader position
         if (!cfg.contains("team-leader.position.x")) {
@@ -68,23 +95,23 @@ public class PluginConfig {
         }
         elevatorHeight = cfg.getInt("elevator.height", 4);
 
-        // Desks
+        // Building origin
+        buildingX = cfg.getInt("building.x", 0);
+        buildingZ = cfg.getInt("building.z", 0);
+        lobbyY = cfg.getInt("building.lobby-y", 64);
+
+        // Floor geometry
+        floorHeight = cfg.getInt("floor.height", 8);
+        floorWidth = cfg.getInt("floor.width", 10);
+        floorDepth = cfg.getInt("floor.depth", 10);
+        desksPerFloor = cfg.getInt("floor.desks-per-floor", 6);
+        maxFloors = cfg.getInt("floor.max-floors", 8);
+
+        // Legacy flat desks list — warn and ignore
         desks = new ArrayList<>();
         var deskList = cfg.getMapList("desks");
-        if (deskList.isEmpty()) {
-            errors.add("desks list is required and must have at least one entry");
-        } else {
-            for (var map : deskList) {
-                try {
-                    int x = toInt(map.get("x"));
-                    int y = toInt(map.get("y"));
-                    int z = toInt(map.get("z"));
-                    String facing = map.getOrDefault("facing", "NORTH").toString();
-                    desks.add(new DeskConfig(x, y, z, facing));
-                } catch (Exception e) {
-                    errors.add("invalid desk entry: " + map);
-                }
-            }
+        if (!deskList.isEmpty()) {
+            plugin.getLogger().warning("[AgentOffice] Legacy 'desks' list in config.yml is ignored. Desk positions are now computed per floor.");
         }
 
         if (!errors.isEmpty()) {
@@ -102,10 +129,22 @@ public class PluginConfig {
     public String getClaudeApiKey() { return claudeApiKey; }
     public String getBeadsBinary() { return beadsBinary; }
     public int getPollIntervalSeconds() { return pollIntervalSeconds; }
+    public String getSessionsFile() { return sessionsFile; }
+    public int getSessionExpiryMinutes() { return sessionExpiryMinutes; }
     public BlockPos getTeamLeaderPos() { return teamLeaderPos; }
     public int getTeamLeaderBroadcastIntervalSeconds() { return teamLeaderBroadcastIntervalSeconds; }
     public BlockPos getElevatorPos() { return elevatorPos; }
     public int getElevatorHeight() { return elevatorHeight; }
+    public int getBuildingX() { return buildingX; }
+    public int getBuildingZ() { return buildingZ; }
+    public int getLobbyY() { return lobbyY; }
+    public int getFloorHeight() { return floorHeight; }
+    public int getFloorWidth() { return floorWidth; }
+    public int getFloorDepth() { return floorDepth; }
+    public int getDesksPerFloor() { return desksPerFloor; }
+    public int getMaxFloors() { return maxFloors; }
+
+    // Legacy accessor — kept for compile compat with old code, returns empty
     public List<DeskConfig> getDesks() { return desks; }
 
     // --- Helpers ---

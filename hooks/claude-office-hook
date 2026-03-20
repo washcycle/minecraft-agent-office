@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+import io
+import sys
+import os
+
+# Immediately suppress all output — the hook must never write to stdout or stderr.
+sys.stdout = io.StringIO()
+sys.stderr = io.StringIO()
+
+try:
+    import json
+    from pathlib import Path
+    from datetime import datetime, timezone
+
+    # ------------------------------------------------------------------ helpers
+
+    SESSIONS_FILE = Path.home() / ".claude" / "office-sessions.json"
+
+    def load_sessions():
+        if SESSIONS_FILE.exists():
+            try:
+                return json.loads(SESSIONS_FILE.read_text())
+            except Exception:
+                pass
+        return {"sessions": []}
+
+    def save_sessions(data):
+        tmp = SESSIONS_FILE.with_suffix(".tmp")
+        tmp.write_text(json.dumps(data, indent=2))
+        os.replace(tmp, SESSIONS_FILE)
+
+    # ------------------------------------------------------------------ main
+
+    if len(sys.argv) < 2:
+        sys.exit(0)
+
+    event_type = sys.argv[1]
+
+    if event_type not in ("SessionStart", "Stop"):
+        sys.exit(0)
+
+    raw = sys.stdin.read()
+    payload = json.loads(raw) if raw.strip() else {}
+
+    session_id = payload.get("session_id") or payload.get("sessionId") or ""
+
+    if event_type == "SessionStart":
+        cwd = payload.get("cwd", "")
+        project_name = os.path.basename(cwd) if cwd else ""
+        started = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        data = load_sessions()
+        # Deduplicate: remove any existing entry for the same project path.
+        data["sessions"] = [s for s in data["sessions"] if s.get("path") != cwd]
+        data["sessions"].append({
+            "id": session_id,
+            "project": project_name,
+            "path": cwd,
+            "started": started,
+        })
+        save_sessions(data)
+
+    elif event_type == "Stop":
+        data = load_sessions()
+        data["sessions"] = [s for s in data["sessions"] if s.get("id") != session_id]
+        save_sessions(data)
+
+except Exception:
+    pass
+
+sys.exit(0)

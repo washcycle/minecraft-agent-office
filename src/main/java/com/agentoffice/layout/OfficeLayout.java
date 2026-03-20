@@ -12,9 +12,17 @@ import java.util.List;
 public class OfficeLayout {
 
     private final PluginConfig config;
+    private final List<DeskConfig> overrideDesks;
 
     public OfficeLayout(PluginConfig config) {
         this.config = config;
+        this.overrideDesks = null;
+    }
+
+    /** Constructor for per-floor use: provide a pre-computed desk list. */
+    public OfficeLayout(List<DeskConfig> desks, PluginConfig config) {
+        this.config = config;
+        this.overrideDesks = desks;
     }
 
     public BlockPos getElevatorBase() {
@@ -34,10 +42,10 @@ public class OfficeLayout {
     }
 
     public List<DeskConfig> getDesks() {
-        return config.getDesks();
+        return overrideDesks != null ? overrideDesks : config.getDesks();
     }
 
     public int getDeskCount() {
-        return config.getDesks().size();
+        return getDesks().size();
     }
 }

@@ -4,7 +4,7 @@
 # Name of the Minecraft world that serves as the virtual office
 office-world: world
 
-# Anthropic API key — REQUIRED
+# Anthropic API key — optional; if blank, NPCs show raw task titles instead of paraphrases
 # Get yours at https://console.anthropic.com/
 claude-api-key: ""
 
@@ -12,8 +12,15 @@ claude-api-key: ""
 # If bd is on your PATH you can leave this as "bd"
 beads-binary: bd
 
-# How often (in seconds) to poll beads for task state changes
+# How often (in seconds) to poll beads for task state changes per active session
 poll-interval-seconds: 10
+
+# Path to the sessions file written by the claude-office-hook script
+# See hooks/INSTALL.md for setup instructions
+sessions-file: "~/.claude/office-sessions.json"
+
+# Sessions older than this many minutes are considered stale and expired
+session-expiry-minutes: 480
 
 # ─── Team Leader NPC ──────────────────────────────────────────────
 team-leader:
@@ -32,14 +39,29 @@ elevator:
     x: 10
     y: 60
     z: 10
-  # Height of the elevator shaft in blocks
-  height: 4
 
-# ─── Desks ────────────────────────────────────────────────────────
-# Each entry is a desk position. Run `/office setup auto <rows> <cols>`
-# to auto-generate these from your in-game position.
-desks:
-  - { x: 5, y: 64, z: 5, facing: NORTH }
-  - { x: 5, y: 64, z: 8, facing: NORTH }
-  - { x: 8, y: 64, z: 5, facing: NORTH }
-  - { x: 8, y: 64, z: 8, facing: NORTH }
+# ─── Building / Floor Layout ──────────────────────────────────────
+# The office is a multi-floor high-rise. Each active Claude Code session
+# gets its own floor. Floors are built dynamically as sessions arrive
+# and vacated (dimmed) when sessions end.
+building:
+  # X/Z origin of the building (one corner of the floor platform)
+  x: 0
+  z: 0
+  # Lobby Y level (ground floor where team leader stands)
+  lobby-y: 64
+
+floor:
+  # Blocks per floor from slab to ceiling (inclusive)
+  height: 8
+  # Floor footprint size in blocks
+  width: 10
+  depth: 10
+  # Number of desks auto-placed per floor in a grid
+  desks-per-floor: 6
+  # Maximum number of floors (building height cap)
+  max-floors: 8
+
+# ─── Legacy (ignored) ─────────────────────────────────────────────
+# If you have an old flat 'desks' list here it will be ignored.
+# Desk positions are now computed automatically per floor.
